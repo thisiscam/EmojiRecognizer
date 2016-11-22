@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import scipy.misc, skimage
 import numpy as np
 import glob, os
@@ -22,7 +24,7 @@ def duplicate_with_noise(emojis, repeat=1000):
                            )
     ret = copy.deepcopy(emojis)
     for i in range(repeat):
-        print "Iter {0}".format(i)
+        print("Iter {0}".format(i))
         augmented_emojis = augmenter.augment_batch(np.array(emojis["images"], dtype=np.uint8))
         ret["images"] += list(augmented_emojis)
         ret["labels"] += emojis["labels"]
@@ -31,7 +33,9 @@ def duplicate_with_noise(emojis, repeat=1000):
     ret["labels"] = labels
     images = []
     for image in ret["images"]:
-        images.append(skimage.transform.resize(image, (28, 28), preserve_range=True))
+        image = skimage.transform.resize(image, (28, 28), preserve_range=True)
+        # image = skimage.util.random_noise(image, mode="gaussian")
+        images.append(image)
     ret["images"] = images
     return ret
 
@@ -47,9 +51,10 @@ def main():
     data_dir = "data"
     out_dir = "noissy_data"
     emojis = load_emoji_data(data_dir)
-    emojis["images"] = emojis["images"][:10]
-    emojis["labels"] = emojis["labels"][:10]
+    emojis["images"] = emojis["images"]
+    emojis["labels"] = emojis["labels"]
     emojis = duplicate_with_noise(emojis)
+    print("Saving emojis")
     save_noissy_data(emojis, out_dir)
 
 if __name__ == "__main__":

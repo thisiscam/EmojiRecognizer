@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import glob, os
 import json
 import numpy as np
@@ -21,10 +23,16 @@ labels = le.transform(labels)
 
 X_train, X_test, y_train, y_test = model_selection.train_test_split(emojis, labels, test_size=0.33)
 
+import argparse
+
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('-t', dest="train", action='store_true', help="run training")
+options = parser.parse_args()
+
 # Parameters
-learning_rate = 0.02
-training_iters = 200000
-batch_size = 512
+learning_rate = 0.01
+training_iters = 1000000
+batch_size = 8192
 display_step = 10
 
 # Network Parameters
@@ -32,7 +40,9 @@ n_input = 28 * 28 # Emoji data input
 n_classes = len(le.classes_) # Emoji total classes (0-9 digits)
 dropout = 0.75 # Dropout, probability to keep units
 
-print "Total {0} classes".format(n_classes)
+trained_network_path = "trained_network/trained.ckpt"
+
+print("Total {0} classes".format(n_classes))
 
 # tf Graph input
 x = tf.placeholder(tf.float32, [None, n_input])
@@ -114,9 +124,14 @@ accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 # Initializing the variables
 init = tf.initialize_all_variables()
 
+# Add ops to save and restore all the variables.
+saver = tf.train.Saver()
+
 # Launch the graph
-with tf.Session() as sess:
-    sess.run(init)
+sess = tf.Session()
+sess.run(init)
+
+if options.train:
     step = 1
     # Keep training until reach max iterations
     while step * batch_size < training_iters:
@@ -134,9 +149,18 @@ with tf.Session() as sess:
                   "{:.5f}".format(acc))
         step += 1
     print("Optimization Finished!")
+    print("Saving model")
+    saver.save(sess, trained_network_path)
+else:
+    saver.restore(sess, trained_network_path)
 
-    # Calculate accuracy for 256 mnist test images
-    print("Testing Accuracy:", \
-        sess.run(accuracy, feed_dict={x: X_test,
-                                      y: y_test,
-                                      keep_prob: 1.}))
+# Calculate accuracy for 256 mnist test images
+print("Testing Accuracy:", \
+    sess.run(accuracy, feed_dict={x: X_test,
+                                  y: y_test,
+                                  keep_prob: 1.}))
+
+def predict_image(image_path):
+    prediction = sess.run(pred, feed_dict={x: x})
+    predicted_emoji_code = le.inverse_transform(prediction)
+
