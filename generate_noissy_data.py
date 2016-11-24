@@ -21,7 +21,7 @@ def duplicate_with_noise(emojis, repeat=1000):
                            shear_deg=5,       # shear between -10 and +10 degrees
                            translation_x_px=2, # translate between -5 and +5 px on the x-axis
                            translation_y_px=2  # translate between -5 and +5 px on the y-axis
-                           )
+                          )
     ret = copy.deepcopy(emojis)
     for i in range(repeat):
         print("Iter {0}".format(i))
@@ -43,7 +43,7 @@ def save_noissy_data(emojis, out_dir):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
     for i, emoji in enumerate(emojis["images"]):
-        scipy.misc.imsave(os.path.join(out_dir, str(i) + ".png"), emoji, format="png")
+        scipy.misc.imsave(os.path.join(out_dir, str(i) + ".png"), emoji)
     with open(os.path.join(out_dir, "labels.json"), "w+") as labels_file:
         json.dump(emojis["labels"], labels_file)
 
